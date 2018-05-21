@@ -24,9 +24,11 @@ public class ChildTab implements IMessageEditorController, ActionListener {
     private final JPanel panel;
 
     public static boolean isEncoded;
+    public static boolean isGzCompressed;
 
     JButton goButton;
     JCheckBox base64CheckBox;
+    JCheckBox compressGzCheckBox;
 
     private final JComboBox<String> payloadComboBox;
 
@@ -67,6 +69,7 @@ public class ChildTab implements IMessageEditorController, ActionListener {
         serializeButton.addActionListener(ChildTab.this);
 
         base64CheckBox = new JCheckBox("Base64 Encode");
+        compressGzCheckBox = new JCheckBox("Compress (GZip)");
 
         String[] typeStrings = { "BeanShell1","CommonsBeanutilsCollectionsLogging1", "CommonsCollections1", "CommonsCollections2", "CommonsCollections3", "CommonsCollections4","Groovy1","Jdk7u21","Spring1"};
         payloadComboBox = new JComboBox<>(typeStrings);
@@ -76,6 +79,7 @@ public class ChildTab implements IMessageEditorController, ActionListener {
         topButtonPanel.add(goButton);
         topButtonPanel.add(serializeButton);
         topButtonPanel.add(base64CheckBox);
+        topButtonPanel.add(compressGzCheckBox);
         topButtonPanel.add(payloadComboBox);
         topButtonPanel.add(helpButton);
 
@@ -138,12 +142,13 @@ public class ChildTab implements IMessageEditorController, ActionListener {
         // String[] command = Utilities.formatCommand(commandTextField.getText());
 
         boolean isEncoded = base64CheckBox.isSelected();
+        boolean isGzCompressed = compressGzCheckBox.isSelected();
 
         String command = commandTextField.getText();
 
         String payloadType = payloadComboBox.getSelectedItem().toString();
 
-        byte[] httpMessage = Utilities.serializeRequest(message,selectedMessage,isEncoded,command,helpers,payloadType);
+        byte[] httpMessage = Utilities.serializeRequest(message,selectedMessage,isEncoded,isGzCompressed,command,helpers,payloadType);
 
         requestViewer.setMessage(httpMessage, true);
 
