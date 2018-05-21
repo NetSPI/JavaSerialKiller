@@ -43,6 +43,22 @@ public class Utilities {
             byte[] endingArray = Arrays.copyOfRange(message, endingOffset, message.length);
 
             byte[] exploitArray = getExploitPayload(payloadType, command);
+            
+            if (isGzCompressed) {
+            	ChildTab.isGzCompressed = true;
+            	try {
+            		ByteArrayOutputStream gzOsBytes = new ByteArrayOutputStream();
+            		GZIPOutputStream gzOs = new GZIPOutputStream(gzOsBytes);
+            		gzOs.write(exploitArray);
+            		gzOs.close();
+            		exploitArray = gzOsBytes.toByteArray();
+            	} catch (IOException ioe) {
+            		System.err.println("Error while compressing payload");
+                    ioe.printStackTrace();
+            	}
+            } else {
+            	ChildTab.isGzCompressed = false;
+            }
 
             ChildTab.selectedMessage = exploitArray;
 
@@ -56,22 +72,6 @@ public class Utilities {
             } else {
                 ChildTab.isEncoded = false;
                 output = Bytes.concat(beginningArray, exploitArray, endingArray);
-            }
-            
-            if (isGzCompressed) {
-            	ChildTab.isGzCompressed = true;
-            	try {
-            		ByteArrayOutputStream gzOsBytes = new ByteArrayOutputStream();
-            		GZIPOutputStream gzOs = new GZIPOutputStream(gzOsBytes);
-            		gzOs.write(output);
-            		gzOs.close();
-            		output = gzOsBytes.toByteArray();
-            	} catch (IOException ioe) {
-            		System.err.println("Error while compressing payload");
-                    ioe.printStackTrace();
-            	}
-            } else {
-            	ChildTab.isGzCompressed = false;
             }
 
             IRequestInfo iRequestInfo = helpers.analyzeRequest(output);
